@@ -7,6 +7,10 @@ echo "$NRFCLOUD_CLIENT_CERT" > /mosquitto/config/nrfcloud_client_cert.crt
 echo "$NRFCLOUD_CLIENT_KEY" > /mosquitto/config/nrfcloud_client_key.key
 echo "$IOT_CERT" > /mosquitto/config/iot_cert.crt
 echo "$IOT_KEY" > /mosquitto/config/iot_key.key
+
+echo "Outputting Client Cert Value"
+echo "$NRFCLOUD_CLIENT_CERT"
+
 chmod 644 /mosquitto/config/nrfcloud_ca.crt
 chmod 644 /mosquitto/config/nrfcloud_client_cert.crt
 chmod 644 /mosquitto/config/nrfcloud_client_key.key

@@ -1,6 +1,9 @@
 import { App } from '@aws-cdk/core';
 import { MqttBridgeStack } from './MqttBridgeStack';
 
-const app = new App()
-new MqttBridgeStack(app);
-app.synth();
+function main() {
+    const app = new App()
+    const stack = new MqttBridgeStack(app);
+}
+
+main()

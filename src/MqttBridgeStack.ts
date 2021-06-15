@@ -41,7 +41,7 @@ export class MqttBridgeStack extends Stack {
 
         const taskDef = new Ec2TaskDefinition(this, 'MqttBridgeTask')
         taskDef.addContainer('MqttBridgeContainer', {
-            image: ContainerImage.fromAsset(__dirname + "/../container"),
+            image: ContainerImage.fromRegistry("public.ecr.aws/q9u9d6w7/nrfcloud-bridge:latest"),
             memoryLimitMiB: 1024,
             logging: LogDriver.awsLogs({
                 streamPrefix: "nrfcloud-bridge"

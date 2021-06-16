@@ -87,8 +87,6 @@ bridge_insecure false
 cleansession true
 start_type automatic
 notifications false
-log_type all
-log_type debug
 
 topic m/# in 1 data/ ${config.mqttTopicPrefix}
 
@@ -101,8 +99,6 @@ bridge_insecure false
 cleansession true
 start_type automatic
 notifications false
-log_type all
-log_type debug
 
 topic # out 1
 `

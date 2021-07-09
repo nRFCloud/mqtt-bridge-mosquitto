@@ -1,8 +1,9 @@
 {
   "name": "mqtt-bridge-mosquitto",
   "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
+  "author": "Nordic Semiconductor ASA | nordicsemi.no",
+  "main": "dist/scripts/init.js",
+  "license": "UNLICENSED",
   "scripts": {
     "compile": "tsc",
     "deploy": "cdk deploy",

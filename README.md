@@ -19,3 +19,16 @@ nrfcloud account info, creates certificates for the local aws iot broker,
     * `<nrfcloud endpoint>` defaults to https://api.nrfcloud.com
 3. Deploy the application
     * `yarn cdk deploy`
+
+## Demo Stack
+In addition the bridge stack, this repo also includes a demo stack that gives a good example
+of what you could use a bridge for. The demo stores data using Iot rules that persist
+data to Timestream, and starts up a grafana instance for visualizing the data.
+
+**Setup steps**
+1. Setup bridge stack using the steps above
+2. Deploy the demo stack
+   * `yarn deploy-demo`
+3. Connect some devices to nrfcloud or use the device simulator to start
+   sending data into your account
+   

@@ -2,10 +2,18 @@ import { App, CfnOutput, Stack } from '@aws-cdk/core';
 import { CfnDatabase, CfnTable } from '@aws-cdk/aws-timestream'
 import { CfnTopicRule } from '@aws-cdk/aws-iot'
 import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-import { Cluster, ContainerImage, Ec2Service, Ec2TaskDefinition, LogDriver, Scope } from '@aws-cdk/aws-ecs';
-import { InstanceClass, InstanceSize, InstanceType, Vpc } from '@aws-cdk/aws-ec2';
+import {
+    Cluster,
+    ContainerImage,
+    Ec2Service,
+    Ec2TaskDefinition,
+    LogDriver,
+    NetworkMode,
+    Scope
+} from '@aws-cdk/aws-ecs';
+import { InstanceClass, InstanceSize, InstanceType, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
+import { join } from 'path'
 import { ApplicationLoadBalancer } from '@aws-cdk/aws-elasticloadbalancingv2';
-import {join} from 'path'
 
 export class DemoStack extends Stack {
     constructor(parent: App) {
@@ -129,6 +137,7 @@ export class DemoStack extends Stack {
 
         const grafanaTaskdef = new Ec2TaskDefinition(this, 'grafana-task', {
             taskRole: grafanaRole,
+            networkMode: NetworkMode.AWS_VPC,
             volumes: [{
                 name: 'grafana-storage', dockerVolumeConfiguration: {
                     autoprovision: true,
@@ -144,8 +153,9 @@ export class DemoStack extends Stack {
                 maxCapacity: 1,
                 allowAllOutbound: true,
                 minCapacity: 1,
+                vpcSubnets: vpc.selectSubnets({subnetType: SubnetType.PUBLIC})
             },
-            vpc
+            vpc,
         })
 
         grafanaTaskdef.addContainer('grafana-container', {
@@ -183,6 +193,9 @@ export class DemoStack extends Stack {
         }).addTargets('grafana-target', {
             port: 80,
             targets: [service.loadBalancerTarget({containerPort: 3000, containerName: 'grafana-container'})],
+            healthCheck: {
+                healthyHttpCodes: '200-499',
+            }
         })
 
         new CfnOutput(this, 'grafana-endpoint', {

@@ -167,7 +167,8 @@ export class DemoStack extends Stack {
             }),
             environment: {
                 GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: 'panodata-map-panel',
-                GF_INSTALL_PLUGINS: 'https://github.com/panodata/panodata-map-panel/releases/download/0.16.0/panodata-map-panel-0.16.0.zip;panodata-map-panel,grafana-timestream-datasource'
+                GF_INSTALL_PLUGINS: 'https://github.com/panodata/panodata-map-panel/releases/download/0.16.0/panodata-map-panel-0.16.0.zip;panodata-map-panel,grafana-timestream-datasource',
+                GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: '/var/lib/grafana/dashboards/demo/device-tracker-dashboard.json'
             },
         }).addMountPoints({
             containerPath: '/var/lib/grafana',

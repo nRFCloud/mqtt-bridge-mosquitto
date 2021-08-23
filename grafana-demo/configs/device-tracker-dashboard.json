@@ -1,0 +1,151 @@
+{
+	"__inputs": [],
+	"__requires": [
+		{
+			"type": "grafana",
+			"id": "grafana",
+			"name": "Grafana",
+			"version": "8.1.2"
+		},
+		{
+			"type": "panel",
+			"id": "panodata-map-panel",
+			"name": "Panodata Map Panel",
+			"version": "0.16.0"
+		}
+	],
+	"annotations": {
+		"list": [
+			{
+				"builtIn": 1,
+				"datasource": "-- Grafana --",
+				"enable": true,
+				"hide": true,
+				"iconColor": "rgba(0, 211, 255, 1)",
+				"name": "Annotations & Alerts",
+				"target": {
+					"limit": 100,
+					"matchAny": false,
+					"tags": [],
+					"type": "dashboard"
+				},
+				"type": "dashboard"
+			}
+		]
+	},
+	"editable": true,
+	"gnetId": null,
+	"graphTooltip": 0,
+	"id": null,
+	"links": [],
+	"panels": [
+		{
+			"autoPanLabels": true,
+			"autoWidthLabels": true,
+			"categories": "a,b",
+			"circleMaxSize": "2",
+			"circleMinSize": 2,
+			"circleOptions": {
+				"strokeEnabled": true,
+				"strokeWeight": 3
+			},
+			"circleSizeAbsoluteEnabled": false,
+			"circleSizeAbsoluteFactor": 1,
+			"clickthroughOptions": {
+				"windowName": null
+			},
+			"clickthroughUrl": "",
+			"colorMode": "threshold",
+			"colors": [
+				"rgba(245, 54, 54, 0.9)",
+				"rgba(237, 129, 40, 0.89)",
+				"rgba(50, 172, 45, 0.97)",
+				"rgba(50, 172, 45, 0.97)"
+			],
+			"customAttribution": false,
+			"customAttributionText": null,
+			"datasource": null,
+			"decimals": 0,
+			"doubleClickZoom": true,
+			"dragging": true,
+			"enableOverlay": false,
+			"enableReloadOverlay": false,
+			"esGeoPoint": null,
+			"esLink": null,
+			"esLocationName": null,
+			"esMetric": "Count",
+			"formatOmitEmptyValue": false,
+			"gridPos": {
+				"h": 9,
+				"w": 12,
+				"x": 0,
+				"y": 0
+			},
+			"hideEmpty": false,
+			"hideTimepickerNavigation": false,
+			"hideZero": false,
+			"id": 2,
+			"ignoreEmptyGeohashValues": false,
+			"ignoreEscapeKey": false,
+			"ignoreInvalidGeohashValues": false,
+			"initialZoom": 1,
+			"legendContainerSelector": null,
+			"locationData": "table",
+			"mapCenter": "(0°, 0°)",
+			"mapCenterLatitude": 0,
+			"mapCenterLongitude": 0,
+			"mapFitData": true,
+			"mapZoomByRadius": null,
+			"maxDataPoints": 1,
+			"maximumZoom": null,
+			"mouseWheelZoom": true,
+			"overlayOpacity": 0.5,
+			"overlayRangeLatitude": "0,10",
+			"overlayRangeLongitude": "0,20",
+			"overlayUrl": "",
+			"showAttribution": true,
+			"showLegend": true,
+			"showZoomControl": true,
+			"stickyLabels": false,
+			"tableQueryOptions": {
+				"geohashField": "geohash",
+				"labelField": "DeviceId",
+				"labelLocationKeyField": null,
+				"latitudeField": "Latitude",
+				"linkField": null,
+				"longitudeField": "Longitude",
+				"metricField": "Temp",
+				"queryType": "coordinates"
+			},
+			"targets": [
+				{
+					"queryType": "raw",
+					"rawQuery": "with latest_location_time as (\n  select DeviceId, max(time) as latest_time \n  from $__database.$__table \n  where measure_name = 'pos' AND NOT measure_value::varchar = ',' \n  group by DeviceId\n), latest_pos as (\n  select a.DeviceId as DeviceId, split_part(measure_value::varchar, ',', 1) as Latitude, split_part(measure_value::varchar, ',', 2) as Longitude\n  from latest_location_time a INNER JOIN $__database.$__table b\n    ON a.DeviceId = b.DeviceId AND a.latest_time = time\n  Where measure_name = 'pos' \n), latest_temp_time as (\n  select DeviceId, max(time) as latest_time \n  from $__database.$__table \n  where measure_name = 'temp' \n  group by DeviceId\n), latest_temp as (\n  select a.DeviceId as DeviceId, measure_value::double as Temp\n  from latest_temp_time a INNER JOIN $__database.$__table b\n    ON a.DeviceId = b.DeviceId AND a.latest_time = time\n  Where measure_name = 'temp'\n)\nselect a.DeviceId, a.Longitude, a.Latitude, b.Temp\nfrom latest_pos a LEFT OUTER JOIN latest_temp b\n  ON a.DeviceId = b.DeviceId",
+					"refId": "A"
+				}
+			],
+			"thresholds": "0,5,10",
+			"title": "Device Tracking",
+			"type": "panodata-map-panel",
+			"unitPlural": "°C",
+			"unitSingular": "°C",
+			"valueName": "total"
+		}
+	],
+	"refresh": "",
+	"schemaVersion": 30,
+	"style": "dark",
+	"tags": [],
+	"templating": {
+		"list": []
+	},
+	"time": {
+		"from": "now-6h",
+		"to": "now"
+	},
+	"timepicker": {},
+	"timezone": "",
+	"title": "Device Tracking",
+	"uid": "fkeyX97nz",
+	"version": 1
+}

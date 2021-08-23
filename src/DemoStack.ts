@@ -5,6 +5,7 @@ import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cd
 import { Cluster, ContainerImage, Ec2Service, Ec2TaskDefinition, LogDriver, Scope } from '@aws-cdk/aws-ecs';
 import { InstanceClass, InstanceSize, InstanceType, Vpc } from '@aws-cdk/aws-ec2';
 import { ApplicationLoadBalancer } from '@aws-cdk/aws-elasticloadbalancingv2';
+import {join} from 'path'
 
 export class DemoStack extends Stack {
     constructor(parent: App) {
@@ -148,7 +149,7 @@ export class DemoStack extends Stack {
         })
 
         grafanaTaskdef.addContainer('grafana-container', {
-            image: ContainerImage.fromRegistry('grafana/grafana'),
+            image: ContainerImage.fromAsset(join(__dirname, '..', 'grafana-demo')),
             portMappings: [{containerPort: 3000, hostPort: 3000}],
             memoryLimitMiB: 1024,
             logging: LogDriver.awsLogs({

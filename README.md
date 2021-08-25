@@ -4,6 +4,8 @@ Uses an account device to subscribe to messages on the nrfcloud side.
 Republishes messages from `{stage}/{tenantId}/#` => `data/#` in the
 local AWS IoT message broker.
 
+## [Usage Guide](https://docs.nrfcloud.com/Guides/Messages/SetupMessageBridge)
+
 ## Setup
 **Prerequisites**
 * nodejs 12+
@@ -31,4 +33,3 @@ data to Timestream, and starts up a grafana instance for visualizing the data.
    * `yarn deploy-demo`
 3. Connect some devices to nrfcloud or use the device simulator to start
    sending data into your account
-   

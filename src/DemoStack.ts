@@ -1,7 +1,7 @@
-import { App, CfnOutput, Stack } from '@aws-cdk/core';
-import { CfnDatabase, CfnTable } from '@aws-cdk/aws-timestream'
-import { CfnTopicRule } from '@aws-cdk/aws-iot'
-import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { App, CfnOutput, Stack } from 'aws-cdk-lib/core';
+import { CfnDatabase, CfnTable } from 'aws-cdk-lib/aws-timestream'
+import { CfnTopicRule } from 'aws-cdk-lib/aws-iot'
+import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import {
     Cluster,
     ContainerImage,
@@ -10,10 +10,10 @@ import {
     LogDriver,
     NetworkMode,
     Scope
-} from '@aws-cdk/aws-ecs';
-import { InstanceClass, InstanceSize, InstanceType, SubnetType, Vpc } from '@aws-cdk/aws-ec2';
+} from 'aws-cdk-lib/aws-ecs';
+import { InstanceClass, InstanceSize, InstanceType, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { join } from 'path'
-import { ApplicationLoadBalancer } from '@aws-cdk/aws-elasticloadbalancingv2';
+import { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 
 export class DemoStack extends Stack {
     constructor(parent: App) {

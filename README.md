@@ -14,13 +14,17 @@ local AWS IoT message broker.
 **Setup steps**
 1. Install dependencies
     * `yarn install` or `npm install`
-2. Initialize context. This creates account device credentials, pulls
+2. Compile package
+   * `yarn compile`
+3. Initialize context. This creates account device credentials, pulls
 nrfcloud account info, creates certificates for the local aws iot broker,
    and saves the resulting keys to ssm parameters.
     * `yarn bridge-init <nrfcloud api key> -e <nrfcloud endpoint>`
     * `<nrfcloud endpoint>` defaults to https://api.nrfcloud.com
-3. Deploy the application
-    * `yarn cdk deploy`
+4. Deploy the application
+   * You may first need to run cdk bootstrap with your aws account info
+     * `yarn cdk bootstrap`
+   * `yarn cdk deploy`
 
 ## Demo Stack
 In addition the bridge stack, this repo also includes a demo stack that gives a good example

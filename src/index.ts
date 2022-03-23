@@ -1,4 +1,4 @@
-import { App } from '@aws-cdk/core';
+import { App } from 'aws-cdk-lib/core';
 import { MqttBridgeStack } from './MqttBridgeStack';
 
 function main() {

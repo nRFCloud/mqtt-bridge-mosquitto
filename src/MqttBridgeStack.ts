@@ -1,7 +1,7 @@
-import { App, Stack } from '@aws-cdk/core';
-import { Cluster, ContainerImage, Ec2Service, Ec2TaskDefinition, LogDriver, Secret } from '@aws-cdk/aws-ecs'
-import { InstanceClass, InstanceSize, InstanceType } from "@aws-cdk/aws-ec2"
-import { StringParameter } from "@aws-cdk/aws-ssm"
+import { App, Stack } from 'aws-cdk-lib/core';
+import { Cluster, ContainerImage, Ec2Service, Ec2TaskDefinition, LogDriver, Secret } from 'aws-cdk-lib/aws-ecs'
+import { InstanceClass, InstanceSize, InstanceType } from "aws-cdk-lib/aws-ec2"
+import { StringParameter } from "aws-cdk-lib/aws-ssm"
 import ajv = require("ajv");
 
 const Ajv = new ajv.default();

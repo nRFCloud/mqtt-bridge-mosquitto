@@ -1,4 +1,4 @@
-import { App, CfnOutput, Stack } from 'aws-cdk-lib/core';
+import { App, CfnOutput, Stack } from 'aws-cdk-lib';
 import { CfnDatabase, CfnTable } from 'aws-cdk-lib/aws-timestream'
 import { CfnTopicRule } from 'aws-cdk-lib/aws-iot'
 import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';

@@ -8,7 +8,8 @@ local AWS IoT message broker.
 
 ## Setup
 **Prerequisites**
-* nodejs 12+
+* nodejs 18+
+* yarn 1.22+
 * AWS credentials configured with access to build and create resources
 
 **Setup steps**

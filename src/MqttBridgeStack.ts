@@ -1,7 +1,7 @@
-import { App, Stack } from 'aws-cdk-lib';
-import { Cluster, ContainerImage, Ec2Service, Ec2TaskDefinition, LogDriver, Secret } from 'aws-cdk-lib/aws-ecs'
-import { InstanceClass, InstanceSize, InstanceType } from "aws-cdk-lib/aws-ec2"
-import { StringParameter } from "aws-cdk-lib/aws-ssm"
+import {App, Duration, Stack} from 'aws-cdk-lib';
+import {Cluster, ContainerImage, FargateService, FargateTaskDefinition, LogDriver, Secret} from 'aws-cdk-lib/aws-ecs'
+import {InstanceClass, InstanceSize, InstanceType, NatProvider, Vpc} from "aws-cdk-lib/aws-ec2"
+import {StringParameter} from "aws-cdk-lib/aws-ssm"
 import ajv = require("ajv");
 
 const Ajv = new ajv.default();
@@ -30,16 +30,19 @@ export class MqttBridgeStack extends Stack {
         const iotCertSSMParam = StringParameter.fromStringParameterName(this, "IotCertSSMParamValue", config.iotCertSSMParam)
 
         const cluster = new Cluster(this, 'MqttBridgeCluster', {
-            capacity: {
-                instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.SMALL),
-                maxCapacity: 1,
-                associatePublicIpAddress: false,
-                allowAllOutbound: true,
-                minCapacity: 1,
-            }
+            enableFargateCapacityProviders: true,
+            vpc: new Vpc(this, 'MqttBridgeVpc', {
+                maxAzs: 1,
+                natGatewayProvider: NatProvider.instanceV2({
+                    instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO)
+                })
+            })
         })
 
-        const taskDef = new Ec2TaskDefinition(this, 'MqttBridgeTask')
+        const taskDef = new FargateTaskDefinition(this, 'MqttBridgeTask', {
+            memoryLimitMiB: 1024,
+            cpu: 512
+        })
         taskDef.addContainer('MqttBridgeContainer', {
             image: ContainerImage.fromRegistry("public.ecr.aws/q9u9d6w7/nrfcloud-bridge:latest"),
             memoryLimitMiB: 1024,
@@ -105,7 +108,7 @@ topic # out 1
             }
         })
 
-        const service = new Ec2Service(this, 'MqttBridgeService', {
+        const service = new FargateService(this, 'MqttBridgeService', {
             cluster,
             taskDefinition: taskDef,
             assignPublicIp: false,

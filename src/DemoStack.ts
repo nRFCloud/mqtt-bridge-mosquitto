@@ -14,6 +14,7 @@ import {
 import {InstanceClass, InstanceSize, InstanceType, NatProvider, SubnetType, Vpc} from 'aws-cdk-lib/aws-ec2';
 import { join } from 'path'
 import { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as fs from "fs";
 
 function superSimpleTemplating(template: string, values: Record<string, string>) {
     return template.replace(/\${([^}]+)}/g, (match, key) => {
@@ -22,7 +23,6 @@ function superSimpleTemplating(template: string, values: Record<string, string>)
 }
 
 function templateFile(sourcePath: string, outputPath: string, values: Record<string, string>) {
-    const fs = require('fs');
     const template = fs.readFileSync(sourcePath, 'utf8');
     const result = superSimpleTemplating(template, values);
     fs.writeFileSync(outputPath, result);
@@ -39,6 +39,7 @@ export class DemoStack extends Stack {
     ]
 
     private templateConfigFiles() {
+        fs.mkdirSync(ConfigOutputBasePath, {recursive: true})
         DemoStack.configFiles.forEach(file => {
             templateFile(join(ConfigTemplateBasePath, file), join(ConfigOutputBasePath, file), {
                 region: this.region

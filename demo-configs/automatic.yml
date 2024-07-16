@@ -18,6 +18,6 @@ datasources:
     jsonData:
       authType: default
       defaultDatabase: '"timestream-demo-db"'
-      defaultRegion: us-east-1
+      defaultRegion: ${region}
       defaultTable: '"timestream-demo-table"'
     readOnly: false

@@ -5,3 +5,4 @@ yarn-error.log
 cdk.context.json
 .env
 .idea
+grafana-demo/generated-configs

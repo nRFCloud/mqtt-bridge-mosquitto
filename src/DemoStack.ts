@@ -11,13 +11,50 @@ import {
     NetworkMode,
     Scope
 } from 'aws-cdk-lib/aws-ecs';
-import { InstanceClass, InstanceSize, InstanceType, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
+import {InstanceClass, InstanceSize, InstanceType, NatProvider, SubnetType, Vpc} from 'aws-cdk-lib/aws-ec2';
 import { join } from 'path'
 import { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 
+function superSimpleTemplating(template: string, values: Record<string, string>) {
+    return template.replace(/\${([^}]+)}/g, (match, key) => {
+        return values[key] || match;
+    });
+}
+
+function templateFile(sourcePath: string, outputPath: string, values: Record<string, string>) {
+    const fs = require('fs');
+    const template = fs.readFileSync(sourcePath, 'utf8');
+    const result = superSimpleTemplating(template, values);
+    fs.writeFileSync(outputPath, result);
+}
+
+const ConfigTemplateBasePath = join(__dirname, '..','demo-configs')
+const ConfigOutputBasePath = join(__dirname, '..', "grafana-demo", "generated-configs")
+
 export class DemoStack extends Stack {
+    private static configFiles = [
+        "automatic.yml",
+        "dashboard-provider.yml",
+        "device-tracker-dashboard.json",
+    ]
+
+    private templateConfigFiles() {
+        DemoStack.configFiles.forEach(file => {
+            templateFile(join(ConfigTemplateBasePath, file), join(ConfigOutputBasePath, file), {
+                region: this.region
+            })
+        })
+    }
+
     constructor(parent: App) {
-        super(parent, DemoStack.getStackName());
+        super(parent, DemoStack.getStackName(), {
+            env: {
+                region: process.env.CDK_DEFAULT_REGION,
+                account: process.env.CDK_DEFAULT_ACCOUNT
+            }
+        });
+
+        this.templateConfigFiles()
 
         const timestreamDB = new CfnDatabase(this, 'timestream-db', {
             databaseName: 'timestream-demo-db',
@@ -114,7 +151,13 @@ export class DemoStack extends Stack {
             }
         })
 
-        const vpc = new Vpc(this, 'grafana-vpc', {maxAzs: 2})
+        const vpc = new Vpc(this, 'grafana-vpc', {
+            maxAzs: 2,
+            natGateways: 1,
+            natGatewayProvider: NatProvider.instanceV2({
+                instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO)
+            })
+        })
 
         const grafanaRole = new Role(this, 'grafana-role', {
             assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),

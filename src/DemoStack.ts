@@ -1,8 +1,9 @@
-import { App, CfnOutput, Stack } from 'aws-cdk-lib';
+import {App, CfnOutput, Names, Stack} from 'aws-cdk-lib';
 import { CfnDatabase, CfnTable } from 'aws-cdk-lib/aws-timestream'
 import { CfnTopicRule } from 'aws-cdk-lib/aws-iot'
+import {WriteRecordsRequest} from "@aws-sdk/client-timestream-write"
 import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import {
+ import {
     Cluster,
     ContainerImage,
     Ec2Service,
@@ -15,6 +16,7 @@ import {InstanceClass, InstanceSize, InstanceType, NatProvider, SubnetType, Vpc}
 import { join } from 'path'
 import { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as fs from "fs";
+import {AwsCustomResource, AwsCustomResourcePolicy} from "aws-cdk-lib/custom-resources";
 
 function superSimpleTemplating(template: string, values: Record<string, string>) {
     return template.replace(/\${([^}]+)}/g, (match, key) => {
@@ -183,7 +185,7 @@ export class DemoStack extends Stack {
             natGateways: 1,
             natGatewayProvider: NatProvider.instanceV2({
                 instanceType: InstanceType.of(InstanceClass.T3, InstanceSize.MICRO)
-            })
+            }),
         })
 
         const grafanaRole = new Role(this, 'grafana-role', {
@@ -273,6 +275,52 @@ export class DemoStack extends Stack {
             value: alb.loadBalancerDnsName,
             description: "Grafana ALB endpoint",
             exportName: 'grafana-endpoint'
+        })
+
+        // Use AwsCustomResource to create dummy data in Timestream
+        // This is needed to ensure that the needed columns are created in the table
+        // This resource will be recreated when updated
+        new AwsCustomResource(timestreamTable, 'dummy-data', {
+            installLatestAwsSdk: false,
+            onCreate: {
+                service: '@aws-sdk/client-timestream-write',
+                action: 'writeRecords',
+                parameters: {
+                    DatabaseName: timestreamDB.databaseName,
+                    TableName: timestreamTable.tableName,
+                    Records: [
+                        {
+                            Dimensions: [
+                                { Name: 'DeviceId', Value: 'dummy' },
+                            ],
+                            MeasureName: 'dummy_temp',
+                            Time: (Date.now() - 1000) +"" ,
+                            MeasureValue: '0',
+                            MeasureValueType: 'DOUBLE',
+                        },
+                        {
+                            Dimensions: [
+                                { Name: 'DeviceId', Value: 'dummy' },
+                            ],
+                            MeasureName: 'dummy_gps',
+                            Time: Date.now() + "",
+                            MeasureValue: '1',
+                            MeasureValueType: 'VARCHAR',
+                        }
+                    ]
+                },
+                physicalResourceId: { id: Names.uniqueId(timestreamTable) + 'dummy-data' },
+            },
+            policy: AwsCustomResourcePolicy.fromStatements([
+                new PolicyStatement({
+                    actions: ['timestream:WriteRecords'],
+                    resources: [timestreamTable.attrArn],
+                }),
+                new PolicyStatement({
+                    actions: ['timestream:DescribeEndpoints'],
+                    resources: ['*'],
+                })
+            ])
         })
     }
 

@@ -304,7 +304,7 @@ export class DemoStack extends Stack {
                             ],
                             MeasureName: 'dummy_gps',
                             Time: Date.now() + "",
-                            MeasureValue: '1',
+                            MeasureValue: '1, 1',
                             MeasureValueType: 'VARCHAR',
                         }
                     ]

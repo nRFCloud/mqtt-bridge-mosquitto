@@ -108,6 +108,32 @@ export class DemoStack extends Stack {
             }
         })
 
+        new CfnTopicRule(this, 'location-rule-alt', {
+            ruleName: "persist_location_rule_alt",
+
+            topicRulePayload: {
+                awsIotSqlVersion: '2016-03-23',
+                sql: `SELECT concat(data.lat, ',', data.lng) as pos
+    from 'data/m/d/+/d2c' 
+       where (appId='GPS' or appId='GNSS') and exists (data.lng)`,
+                ruleDisabled: false,
+                description: 'Parses asset tracker gps strings into lat,lon pairs then stores them in timestream',
+                actions: [
+                    {
+                        timestream: {
+                            databaseName: timestreamDB.databaseName,
+                            tableName: timestreamTable.tableName,
+                            dimensions: [{
+                                name: 'DeviceId',
+                                value: '${topic(4)}'
+                            }],
+                            roleArn: topicRuleRole.roleArn
+                        }
+                    }
+                ]
+            },
+        })
+
         new CfnTopicRule(this, 'location-rule', {
             ruleName: 'persist_location_rule',
             topicRulePayload: {
@@ -130,7 +156,7 @@ export class DemoStack extends Stack {
                                          WHEN "E" THEN 1
                                          WHEN "W" THEN -1 END)) as pos
                       from 'data/m/d/+/d2c'
-                      where appId='GPS' and startswith(data, "$GPGGA")
+                      where (appId='GPS' or appId='GNSS') and startswith(data, "$GPGGA")
 
                 `,
                 ruleDisabled: false,

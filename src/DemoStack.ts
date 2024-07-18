@@ -1,9 +1,8 @@
 import {App, CfnOutput, Names, Stack} from 'aws-cdk-lib';
-import { CfnDatabase, CfnTable } from 'aws-cdk-lib/aws-timestream'
-import { CfnTopicRule } from 'aws-cdk-lib/aws-iot'
-import {WriteRecordsRequest} from "@aws-sdk/client-timestream-write"
-import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
- import {
+import {CfnDatabase, CfnTable} from 'aws-cdk-lib/aws-timestream'
+import {CfnTopicRule} from 'aws-cdk-lib/aws-iot'
+import {PolicyDocument, PolicyStatement, Role, ServicePrincipal} from 'aws-cdk-lib/aws-iam';
+import {
     Cluster,
     ContainerImage,
     Ec2Service,
@@ -13,8 +12,8 @@ import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk
     Scope
 } from 'aws-cdk-lib/aws-ecs';
 import {InstanceClass, InstanceSize, InstanceType, NatProvider, SubnetType, Vpc} from 'aws-cdk-lib/aws-ec2';
-import { join } from 'path'
-import { ApplicationLoadBalancer } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import {join} from 'path'
+import {ApplicationLoadBalancer} from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as fs from "fs";
 import {AwsCustomResource, AwsCustomResourcePolicy} from "aws-cdk-lib/custom-resources";
 
@@ -30,7 +29,7 @@ function templateFile(sourcePath: string, outputPath: string, values: Record<str
     fs.writeFileSync(outputPath, result);
 }
 
-const ConfigTemplateBasePath = join(__dirname, '..','demo-configs')
+const ConfigTemplateBasePath = join(__dirname, '..', 'demo-configs')
 const ConfigOutputBasePath = join(__dirname, '..', "grafana-demo", "generated-configs")
 
 export class DemoStack extends Stack {
@@ -91,7 +90,9 @@ export class DemoStack extends Stack {
         new CfnTopicRule(this, 'temp-rule', {
             ruleName: 'persist_temp_rule',
             topicRulePayload: {
-                sql: `SELECT cast(data as Double) as temp from 'data/m/d/+/d2c' where appId='TEMP'`,
+                sql: `SELECT cast(data as Double) as temp
+                      from 'data/m/d/+/d2c'
+                      where appId='TEMP'`,
                 ruleDisabled: false,
                 description: 'Saves asset tracker temp data into timestream',
                 actions: [
@@ -116,8 +117,8 @@ export class DemoStack extends Stack {
             topicRulePayload: {
                 awsIotSqlVersion: '2016-03-23',
                 sql: `SELECT concat(data.lat, ',', data.lng) as pos
-    from 'data/m/d/+/d2c' 
-       where (appId='GPS' or appId='GNSS') and exists (data.lng)`,
+                      from 'data/m/d/+/d2c'
+                      where (appId='GPS' or appId='GNSS') and exists (data.lng)`,
                 ruleDisabled: false,
                 description: 'Parses asset tracker gps strings into lat,lon pairs then stores them in timestream',
                 actions: [
@@ -211,7 +212,8 @@ export class DemoStack extends Stack {
             taskRole: grafanaRole,
             networkMode: NetworkMode.AWS_VPC,
             volumes: [{
-                name: 'grafana-storage', dockerVolumeConfiguration: {
+                name: 'grafana-storage',
+                dockerVolumeConfiguration: {
                     autoprovision: true,
                     driver: 'local',
                     scope: Scope.SHARED
@@ -232,7 +234,10 @@ export class DemoStack extends Stack {
 
         grafanaTaskdef.addContainer('grafana-container', {
             image: ContainerImage.fromAsset(join(__dirname, '..', 'grafana-demo')),
-            portMappings: [{containerPort: 3000, hostPort: 3000}],
+            portMappings: [{
+                containerPort: 3000,
+                hostPort: 3000
+            }],
             memoryLimitMiB: 1024,
             logging: LogDriver.awsLogs({
                 streamPrefix: "nrfcloud-grafana-demo"
@@ -265,7 +270,10 @@ export class DemoStack extends Stack {
             open: true
         }).addTargets('grafana-target', {
             port: 80,
-            targets: [service.loadBalancerTarget({containerPort: 3000, containerName: 'grafana-container'})],
+            targets: [service.loadBalancerTarget({
+                containerPort: 3000,
+                containerName: 'grafana-container'
+            })],
             healthCheck: {
                 healthyHttpCodes: '200-499',
             }
@@ -291,16 +299,22 @@ export class DemoStack extends Stack {
                     Records: [
                         {
                             Dimensions: [
-                                { Name: 'DeviceId', Value: 'dummy' },
+                                {
+                                    Name: 'DeviceId',
+                                    Value: 'dummy'
+                                },
                             ],
                             MeasureName: 'dummy_temp',
-                            Time: (Date.now() - 1000) +"" ,
+                            Time: (Date.now() - 1000) + "",
                             MeasureValue: '0',
                             MeasureValueType: 'DOUBLE',
                         },
                         {
                             Dimensions: [
-                                { Name: 'DeviceId', Value: 'dummy' },
+                                {
+                                    Name: 'DeviceId',
+                                    Value: 'dummy'
+                                },
                             ],
                             MeasureName: 'dummy_gps',
                             Time: Date.now() + "",
@@ -309,7 +323,7 @@ export class DemoStack extends Stack {
                         }
                     ]
                 },
-                physicalResourceId: { id: Names.uniqueId(timestreamTable) + 'dummy-data' },
+                physicalResourceId: {id: Names.uniqueId(timestreamTable) + 'dummy-data'},
             },
             policy: AwsCustomResourcePolicy.fromStatements([
                 new PolicyStatement({

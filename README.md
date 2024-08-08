@@ -4,7 +4,7 @@ Uses an account device to subscribe to messages on the nrfcloud side.
 Republishes messages from `{stage}/{tenantId}/#` => `data/#` in the
 local AWS IoT message broker.
 
-## [Usage Guide](https://docs.nrfcloud.com/Guides/Messages/SetupMessageBridge)
+## [Usage Guide](https://docs.nordicsemi.com/bundle/nrf-cloud/page/Devices/MessagesAndAlerts/SetupMessageBridge.html)
 
 ## Setup
 **Prerequisites**

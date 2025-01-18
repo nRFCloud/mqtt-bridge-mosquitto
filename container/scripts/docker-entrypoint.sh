@@ -2,7 +2,7 @@
 set -e
 
 echo "$MOSQUITTO_CONFIG" > /mosquitto/config/mosquitto.conf
-echo "$NRFCLOUD_CA" > /mosquitto/config/nrfcloud.crt
+echo "$NRFCLOUD_CA" > /mosquitto/config/nrfcloud_ca.crt
 echo "$NRFCLOUD_CLIENT_CERT" > /mosquitto/config/nrfcloud_client_cert.crt
 echo "$NRFCLOUD_CLIENT_KEY" > /mosquitto/config/nrfcloud_client_key.key
 echo "$IOT_CERT" > /mosquitto/config/iot_cert.crt

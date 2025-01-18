@@ -82,9 +82,9 @@ address ${config.nrfCloudMqttEndpoint}:8883
 local_clientid nrfcloud-bridge-local
 remote_clientid ${config.mqttTeamDeviceClientId}
 bridge_protocol_version mqttv311
-bridge_cafile /mosquitto/config/nrfCloud_ca.crt
-bridge_certfile /mosquitto/config/nrfCloud_client_cert.crt
-bridge_keyfile /mosquitto/config/nrfCloud_client_key.key
+bridge_cafile /mosquitto/config/nrfcloud_ca.crt
+bridge_certfile /mosquitto/config/nrfcloud_client_cert.crt
+bridge_keyfile /mosquitto/config/nrfcloud_client_key.key
 bridge_insecure false
 cleansession true
 start_type automatic
@@ -96,7 +96,7 @@ topic m/# in 1 data/ ${config.mqttTopicPrefix}
 
 connection iot-bridge
 address ${config.mqttEndpoint}:8883
-bridge_cafile /mosquitto/config/nrfCloud_ca.crt
+bridge_cafile /mosquitto/config/nrfcloud_ca.crt
 bridge_certfile /mosquitto/config/iot_cert.crt
 bridge_keyfile /mosquitto/config/iot_key.key
 bridge_insecure false

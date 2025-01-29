@@ -20,6 +20,9 @@ if [ "$user" = '0' ]; then
         [ -d "/mosquitto" ] && chown -R mosquitto:mosquitto /mosquitto || true
 fi
 
+echo "Mosquitto configuration file:"
+cat /mosquitto/config/mosquitto.conf
+
 echo "$@"
 
 exec "$@"

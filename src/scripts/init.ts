@@ -31,7 +31,7 @@ const args = yargs.command('$0 <apiKey>', 'Initialize context', (yargs) => {
     }).option('endpoint', {
         type: "string",
         description: "The nRF Cloud REST API host endpoint.",
-        default: "https://api.nrfCloud.com",
+        default: "https://api.nrfcloud.com",
         alias: "e"
     }).option('reset', {
         type: 'boolean',

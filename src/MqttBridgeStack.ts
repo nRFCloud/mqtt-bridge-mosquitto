@@ -1,4 +1,4 @@
-import {App, Duration, Stack} from 'aws-cdk-lib';
+import {App, Stack} from 'aws-cdk-lib';
 import {Cluster, ContainerImage, FargateService, FargateTaskDefinition, LogDriver, Secret} from 'aws-cdk-lib/aws-ecs'
 import {InstanceClass, InstanceSize, InstanceType, NatProvider, Vpc} from "aws-cdk-lib/aws-ec2"
 import {StringParameter} from "aws-cdk-lib/aws-ssm"
@@ -7,14 +7,15 @@ import ajv = require("ajv");
 const Ajv = new ajv.default();
 
 interface Config {
-    mqttEndpoint: string;
+    nrfCloudMqttEndpoint: string;
     mqttTopicPrefix: string;
-    accountDeviceClientId: string;
-    accountDeviceCertSSMParam: string;
-    accountDeviceKeySSMParam: string;
-    iotCertSSMParam: string;
-    iotKeySSMParam: string;
-    nrfcloudMqttEndpoint: string;
+    mqttTeamDeviceClientId: string;
+    mqttTeamDeviceClientIdSSMParam: string;
+    mqttTeamDeviceCertSSMParam: string;
+    mqttTeamDeviceKeySSMParam: string;
+    localMqttEndpoint: string;
+    localIotClientCertSSMParam: string;
+    localIotClientKeySSMParam: string;
 }
 
 export class MqttBridgeStack extends Stack {
@@ -23,11 +24,12 @@ export class MqttBridgeStack extends Stack {
 
         const config = this.getConfig();
 
-        const accountDeviceClientCertSSMParam = StringParameter.fromStringParameterName(this, "AccountDeviceClientCertSSMParamValue", config.accountDeviceCertSSMParam)
-        const accountDeviceClientKeySSMParam = StringParameter.fromStringParameterName(this, "AccountDeviceClientKeySSMParamValue", config.accountDeviceKeySSMParam)
+        const mqttTeamDeviceClientIdSSMParam = StringParameter.fromStringParameterName(this, "MqttTeamDeviceClientIdSSMParamValue", config.mqttTeamDeviceClientIdSSMParam)
+        const mqttTeamDeviceClientCertSSMParam = StringParameter.fromStringParameterName(this, "MqttTeamDeviceClientCertSSMParamValue", config.mqttTeamDeviceCertSSMParam)
+        const mqttTeamDeviceClientKeySSMParam = StringParameter.fromStringParameterName(this, "MqttTeamDeviceClientKeySSMParamValue", config.mqttTeamDeviceKeySSMParam)
 
-        const iotKeySSMParam = StringParameter.fromStringParameterName(this, "IotKeySSMParamValue", config.iotKeySSMParam);
-        const iotCertSSMParam = StringParameter.fromStringParameterName(this, "IotCertSSMParamValue", config.iotCertSSMParam)
+        const localIotClientKeySSMParam = StringParameter.fromStringParameterName(this, "LocalIotClientKeySSMParamValue", config.localIotClientKeySSMParam);
+        const localIotClientCertSSMParam = StringParameter.fromStringParameterName(this, "LocalIotClientCertSSMParamValue", config.localIotClientCertSSMParam)
 
         const cluster = new Cluster(this, 'MqttBridgeCluster', {
             enableFargateCapacityProviders: true,
@@ -50,10 +52,11 @@ export class MqttBridgeStack extends Stack {
                 streamPrefix: "nrfcloud-bridge"
             }),
             secrets: {
-                NRFCLOUD_CLIENT_CERT: Secret.fromSsmParameter(accountDeviceClientCertSSMParam),
-                NRFCLOUD_CLIENT_KEY: Secret.fromSsmParameter(accountDeviceClientKeySSMParam),
-                IOT_CERT: Secret.fromSsmParameter(iotCertSSMParam),
-                IOT_KEY: Secret.fromSsmParameter(iotKeySSMParam)
+                NRFCLOUD_CLIENT_ID: Secret.fromSsmParameter(mqttTeamDeviceClientIdSSMParam),
+                NRFCLOUD_CLIENT_CERT: Secret.fromSsmParameter(mqttTeamDeviceClientCertSSMParam),
+                NRFCLOUD_CLIENT_KEY: Secret.fromSsmParameter(mqttTeamDeviceClientKeySSMParam),
+                IOT_CERT: Secret.fromSsmParameter(localIotClientCertSSMParam),
+                IOT_KEY: Secret.fromSsmParameter(localIotClientKeySSMParam)
             },
             environment: {
                 NRFCLOUD_CA: "-----BEGIN CERTIFICATE-----\n" +
@@ -76,12 +79,11 @@ export class MqttBridgeStack extends Stack {
                     "5MsI+yMRQ+hDKXJioaldXgjUkK642M4UwtBV8ob2xJNDd2ZhwLnoQdeXeGADbkpy\n" +
                     "rqXRfboQnoZsG4q5WTP468SQvvG5\n" +
                     "-----END CERTIFICATE-----",
-                // TODO: protect these better somehow
                 MOSQUITTO_CONFIG: `
 connection nrfcloud-bridge
-address ${config.nrfcloudMqttEndpoint}:8883
+address ${config.nrfCloudMqttEndpoint}:8883
 local_clientid nrfcloud-bridge-local
-remote_clientid ${config.accountDeviceClientId}
+remote_clientid ${config.mqttTeamDeviceClientId}
 bridge_protocol_version mqttv311
 bridge_cafile /mosquitto/config/nrfcloud_ca.crt
 bridge_certfile /mosquitto/config/nrfcloud_client_cert.crt
@@ -90,11 +92,13 @@ bridge_insecure false
 cleansession true
 start_type automatic
 notifications false
+log_type all
+log_timestamp true
 
 topic m/# in 1 data/ ${config.mqttTopicPrefix}
 
 connection iot-bridge
-address ${config.mqttEndpoint}:8883
+address ${config.localMqttEndpoint}:8883
 bridge_cafile /mosquitto/config/nrfcloud_ca.crt
 bridge_certfile /mosquitto/config/iot_cert.crt
 bridge_keyfile /mosquitto/config/iot_key.key
@@ -102,6 +106,8 @@ bridge_insecure false
 cleansession true
 start_type automatic
 notifications false
+log_type all
+log_timestamp true
 
 topic # out 1
 `
@@ -118,46 +124,51 @@ topic # out 1
 
     private getConfig(): Config {
         const config: Config = {
-            accountDeviceCertSSMParam: this.node.tryGetContext("accountDeviceCertSSMParam"),
-            accountDeviceClientId: this.node.tryGetContext("accountDeviceClientId"),
-            mqttEndpoint: this.node.tryGetContext("mqttEndpoint"),
-            accountDeviceKeySSMParam: this.node.tryGetContext("accountDeviceKeySSMParam"),
+            nrfCloudMqttEndpoint: this.node.tryGetContext("nrfCloudMqttEndpoint"),
             mqttTopicPrefix: this.node.tryGetContext("mqttTopicPrefix"),
-            nrfcloudMqttEndpoint: this.node.tryGetContext("nrfcloudMqttEndpoint"),
-            iotCertSSMParam: this.node.tryGetContext("iotCertSSMParam"),
-            iotKeySSMParam: this.node.tryGetContext("iotKeySSMParam")
+            mqttTeamDeviceClientId: this.node.tryGetContext("mqttTeamDeviceClientId"),
+            mqttTeamDeviceClientIdSSMParam: this.node.tryGetContext("mqttTeamDeviceClientIdSSMParam"),
+            mqttTeamDeviceCertSSMParam: this.node.tryGetContext("mqttTeamDeviceCertSSMParam"),
+            mqttTeamDeviceKeySSMParam: this.node.tryGetContext("mqttTeamDeviceKeySSMParam"),
+            localMqttEndpoint: this.node.tryGetContext("localMqttEndpoint"),
+            localIotClientCertSSMParam: this.node.tryGetContext("localIotClientCertSSMParam"),
+            localIotClientKeySSMParam: this.node.tryGetContext("localIotClientKeySSMParam")
         }
 
         const valid = Ajv.validate({
             type: "object",
             properties: {
-                accountDeviceCertSSMParam: {
-                    type: "string"
-                },
-                accountDeviceClientId: {
-                    type: "string"
-                },
-                mqttEndpoint: {
-                    type: "string"
-                },
-                accountDeviceKeySSMParam: {
+                nrfCloudMqttEndpoint: {
                     type: "string"
                 },
                 mqttTopicPrefix: {
                     type: "string"
                 },
-                nrfcloudMqttEndpoint: {
+                mqttTeamDeviceClientId: {
                     type: "string"
                 },
-                iotKeySSMParam: {
+                mqttTeamDeviceClientIdSSMParam: {
                     type: "string"
                 },
-                iotCertSSMParam: {
+                mqttTeamDeviceCertSSMParam: {
                     type: "string"
-                }
+                },
+                mqttTeamDeviceKeySSMParam: {
+                    type: "string"
+                },
+                localMqttEndpoint: {
+                    type: "string"
+                },
+                localIotClientCertSSMParam: {
+                    type: "string"
+                },
+                localIotClientKeySSMParam: {
+                    type: "string"
+                },
             },
-            required: ["mqttTopicPrefix", "accountDeviceKeySSMParam", "mqttEndpoint", "accountDeviceClientId",
-                "accountDeviceCertSSMParam", "nrfcloudMqttEndpoint", "iotCertSSMParam", "iotKeySSMParam"]
+            required: ["nrfCloudMqttEndpoint", "mqttTopicPrefix", "mqttTeamDeviceClientId",
+                "mqttTeamDeviceClientIdSSMParam", "mqttTeamDeviceCertSSMParam", "mqttTeamDeviceKeySSMParam",
+                "localMqttEndpoint", "localIotClientCertSSMParam", "localIotClientKeySSMParam"]
         }, config)
 
         if (!valid) {

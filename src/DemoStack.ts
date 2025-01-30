@@ -94,7 +94,7 @@ export class DemoStack extends Stack {
                       from 'data/m/d/+/d2c'
                       where appId='TEMP'`,
                 ruleDisabled: false,
-                description: 'Saves asset tracker temp data into timestream',
+                description: 'Saves asset tracker temp data into Timestream.',
                 actions: [
                     {
                         timestream: {
@@ -120,7 +120,7 @@ export class DemoStack extends Stack {
                       from 'data/m/d/+/d2c'
                       where (appId='GPS' or appId='GNSS') and exists (data.lng)`,
                 ruleDisabled: false,
-                description: 'Parses asset tracker gps strings into lat,lon pairs then stores them in timestream',
+                description: 'Parses asset tracker GPS strings into lat,lon pairs then stores them in Timestream.',
                 actions: [
                     {
                         timestream: {
@@ -163,7 +163,7 @@ export class DemoStack extends Stack {
 
                 `,
                 ruleDisabled: false,
-                description: 'Parses asset tracker gps strings into lat,lon pairs then stores them in timestream',
+                description: 'Parses asset tracker GPS strings into lat,lon pairs then stores them in Timestream.',
                 actions: [
                     {
                         timestream: {

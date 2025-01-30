@@ -58,6 +58,7 @@ interface MqttTeamDevice extends CertificateCredentials {
 interface ContextInfo {
     nrfCloudMqttEndpoint: string;
     mqttTopicPrefix: string;
+    mqttTeamDeviceClientId: string;
     mqttTeamDeviceClientIdSSMParam: string;
     mqttTeamDeviceCertSSMParam: string;
     mqttTeamDeviceKeySSMParam: string;
@@ -70,20 +71,21 @@ async function initializeContext(input: CliInput) {
     // Verify context file is valid
     await getExistingContext()
     const accountInfo = await getAccountInfo(input);
-    const iotEndpoint = (await Iot.send(new DescribeEndpointCommand({endpointType: "iot:Data-ATS"}))).endpointAddress
-    console.log(`AWS IoT endpoint: ${iotEndpoint}`)
+    const localIotEndpoint = (await Iot.send(new DescribeEndpointCommand({endpointType: "iot:Data-ATS"}))).endpointAddress
+    console.log(`Local AWS IoT endpoint: ${localIotEndpoint}`)
     console.log("Retrieved nRF Cloud account info:")
     console.log(JSON.stringify(accountInfo, null, 2))
-    await ensureNrfCloudMqttTeamDevice(input);
-    await saveLocalIotClientCredentialsToSSM(input);
+    const mqttTeamDeviceClientId = await ensureNrfCloudMqttTeamDevice(input);
+    await ensureLocalIotClientCredentials(input);
     console.log("Saving context info")
     const context = {
         nrfCloudMqttEndpoint: accountInfo.mqttEndpoint,
         mqttTopicPrefix: accountInfo.mqttTopicPrefix,
+        mqttTeamDeviceClientId,
         mqttTeamDeviceClientIdSSMParam: NRFCLOUD_MQTT_DEVICE_ID_PARAM,
         mqttTeamDeviceCertSSMParam: NRFCLOUD_CLIENT_CERT_PARAM,
         mqttTeamDeviceKeySSMParam: NRFCLOUD_CLIENT_KEY_PARAM,
-        mqttEndpoint: iotEndpoint,
+        mqttEndpoint: localIotEndpoint,
         localIotClientCertSSMParam: LOCAL_CLIENT_CERT_PARAM,
         localIotClientKeySSMParam: LOCAL_CLIENT_KEY_PARAM,
     }
@@ -168,18 +170,19 @@ async function saveMqttTeamDeviceDataToSSM(teamDevice: MqttTeamDevice) {
     }))
 }
 
-async function ensureNrfCloudMqttTeamDevice(config: CliInput) {
+async function ensureNrfCloudMqttTeamDevice(config: CliInput) : Promise<string> {
     const ssmParams =
         `SSM Parameters ${NRFCLOUD_MQTT_DEVICE_ID_PARAM}, ${NRFCLOUD_CLIENT_CERT_PARAM} and ${NRFCLOUD_CLIENT_KEY_PARAM}`
-    const res = await getNrfCloudMqttTeamDeviceSSM();
-    if (res.clientId == null || res.privateKey == null || res.clientCert == null || config.reset) {
+    let mqttTeamDevice = await getNrfCloudMqttTeamDeviceSSM();
+    if (mqttTeamDevice.clientId == null || mqttTeamDevice.privateKey == null || mqttTeamDevice.clientCert == null || config.reset) {
         console.log("Generating new MQTT Team Device")
-        const mqttTeamDevice = await generateNrfCloudMqttTeamDevice(config);
+        mqttTeamDevice = await generateNrfCloudMqttTeamDevice(config);
         await saveMqttTeamDeviceDataToSSM(mqttTeamDevice)
         console.log(`Saved new MQTT Team Device ${mqttTeamDevice.clientId} data to ${ssmParams}`)
     } else {
-        console.log(`Existing MQTT Team Device ${res.clientId} data present in ${ssmParams}`)
+        console.log(`Existing MQTT Team Device ${mqttTeamDevice.clientId} data present in ${ssmParams}`)
     }
+    return mqttTeamDevice.clientId;
 }
 
 async function generateLocalIotClientCredentials(): Promise<CertificateCredentials> {
@@ -218,7 +221,7 @@ async function saveIotCredentialsSSM(credentials: CertificateCredentials) {
     }))
 }
 
-async function saveLocalIotClientCredentialsToSSM(config: CliInput) {
+async function ensureLocalIotClientCredentials(config: CliInput) {
     const res = await getLocalIotClientCredentialsSSM();
     if (res.privateKey == null || res.clientCert == null || config.reset) {
         console.log("Generating new IoT credentials")

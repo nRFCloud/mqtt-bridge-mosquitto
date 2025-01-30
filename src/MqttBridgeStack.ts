@@ -9,6 +9,7 @@ const Ajv = new ajv.default();
 interface Config {
     nrfCloudMqttEndpoint: string;
     mqttTopicPrefix: string;
+    mqttTeamDeviceClientId: string;
     mqttTeamDeviceClientIdSSMParam: string;
     mqttTeamDeviceCertSSMParam: string;
     mqttTeamDeviceKeySSMParam: string;
@@ -82,7 +83,7 @@ export class MqttBridgeStack extends Stack {
 connection nrfcloud-bridge
 address ${config.nrfCloudMqttEndpoint}:8883
 local_clientid nrfcloud-bridge-local
-remote_clientid ${config.mqttTeamDeviceClientIdSSMParam}
+remote_clientid ${config.mqttTeamDeviceClientId}
 bridge_protocol_version mqttv311
 bridge_cafile /mosquitto/config/nrfcloud_ca.crt
 bridge_certfile /mosquitto/config/nrfcloud_client_cert.crt
@@ -125,6 +126,7 @@ topic # out 1
         const config: Config = {
             nrfCloudMqttEndpoint: this.node.tryGetContext("nrfCloudMqttEndpoint"),
             mqttTopicPrefix: this.node.tryGetContext("mqttTopicPrefix"),
+            mqttTeamDeviceClientId: this.node.tryGetContext("mqttTeamDeviceClientId"),
             mqttTeamDeviceClientIdSSMParam: this.node.tryGetContext("mqttTeamDeviceClientIdSSMParam"),
             mqttTeamDeviceCertSSMParam: this.node.tryGetContext("mqttTeamDeviceCertSSMParam"),
             mqttTeamDeviceKeySSMParam: this.node.tryGetContext("mqttTeamDeviceKeySSMParam"),
@@ -140,6 +142,9 @@ topic # out 1
                     type: "string"
                 },
                 mqttTopicPrefix: {
+                    type: "string"
+                },
+                mqttTeamDeviceClientId: {
                     type: "string"
                 },
                 mqttTeamDeviceClientIdSSMParam: {
@@ -161,8 +166,9 @@ topic # out 1
                     type: "string"
                 },
             },
-            required: ["nrfCloudMqttEndpoint", "mqttTopicPrefix", "mqttTeamDeviceClientIdSSMParam", "mqttTeamDeviceCertSSMParam",
-                "mqttTeamDeviceKeySSMParam", "mqttEndpoint", "localIotClientCertSSMParam", "localIotClientKeySSMParam"]
+            required: ["nrfCloudMqttEndpoint", "mqttTopicPrefix", "mqttTeamDeviceClientId",
+                "mqttTeamDeviceClientIdSSMParam", "mqttTeamDeviceCertSSMParam", "mqttTeamDeviceKeySSMParam",
+                "mqttEndpoint", "localIotClientCertSSMParam", "localIotClientKeySSMParam"]
         }, config)
 
         if (!valid) {

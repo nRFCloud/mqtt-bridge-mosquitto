@@ -36,7 +36,7 @@ const args = yargs.command('$0 <apiKey>', 'Initialize context', (yargs) => {
     }).option('reset', {
         type: 'boolean',
         default: false,
-        description: "Regenerate all credentials. This will create a new MQTT Team Device."
+        description: "Regenerate all credentials. This will create a new nRF Cloud MQTT Team Device and a new certificate for the local AWS IoT broker."
     })
 }, initializeContext).help('h').argv
 

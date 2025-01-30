@@ -17,19 +17,19 @@ local AWS IoT message broker.
     * `yarn install` or `npm install`
 2. Compile package
    * `yarn compile`
-3. Initialize context. This creates MQTT Team Device credentials, pulls
-nRF Cloud account info, creates certificates for the local AWS IoT broker,
-   and saves the resulting keys to ssm parameters.
+3. Initialize context. This creates an MQTT Team Device with credentials, pulls
+nRF Cloud account info, creates a certificate for the local AWS IoT broker,
+   and saves the resulting keys to AWS SSM parameters.
     * `yarn bridge-init <nRF Cloud API key> -e <nRF Cloud endpoint>`
-    * `<nRF Cloud endpoint>` defaults to https://api.nRF Cloud.com
+    * `<nRF Cloud endpoint>` defaults to https://api.nrfcloud.com
 4. Deploy the application
    * You may first need to run cdk bootstrap with your aws account info
      * `yarn cdk bootstrap`
    * `yarn cdk deploy`
 
 ## Demo Stack
-In addition the bridge stack, this repo also includes a demo stack that gives a good example
-of what you could use a bridge for. The demo stores data using Iot rules that persist
+In addition the bridge stack, this repo also includes a demo stack that gives a
+good example of a use case for the bridge. The demo stores data using IoT rules that persist
 data to Timestream, and starts up a grafana instance for visualizing the data.
 
 **Setup steps**

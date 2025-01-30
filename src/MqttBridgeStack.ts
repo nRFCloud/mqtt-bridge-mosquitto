@@ -13,7 +13,7 @@ interface Config {
     mqttTeamDeviceClientIdSSMParam: string;
     mqttTeamDeviceCertSSMParam: string;
     mqttTeamDeviceKeySSMParam: string;
-    mqttEndpoint: string;
+    localMqttEndpoint: string;
     localIotClientCertSSMParam: string;
     localIotClientKeySSMParam: string;
 }
@@ -98,7 +98,7 @@ log_timestamp true
 topic m/# in 1 data/ ${config.mqttTopicPrefix}
 
 connection iot-bridge
-address ${config.mqttEndpoint}:8883
+address ${config.localMqttEndpoint}:8883
 bridge_cafile /mosquitto/config/nrfcloud_ca.crt
 bridge_certfile /mosquitto/config/iot_cert.crt
 bridge_keyfile /mosquitto/config/iot_key.key
@@ -130,7 +130,7 @@ topic # out 1
             mqttTeamDeviceClientIdSSMParam: this.node.tryGetContext("mqttTeamDeviceClientIdSSMParam"),
             mqttTeamDeviceCertSSMParam: this.node.tryGetContext("mqttTeamDeviceCertSSMParam"),
             mqttTeamDeviceKeySSMParam: this.node.tryGetContext("mqttTeamDeviceKeySSMParam"),
-            mqttEndpoint: this.node.tryGetContext("mqttEndpoint"),
+            localMqttEndpoint: this.node.tryGetContext("localMqttEndpoint"),
             localIotClientCertSSMParam: this.node.tryGetContext("localIotClientCertSSMParam"),
             localIotClientKeySSMParam: this.node.tryGetContext("localIotClientKeySSMParam")
         }
@@ -156,7 +156,7 @@ topic # out 1
                 mqttTeamDeviceKeySSMParam: {
                     type: "string"
                 },
-                mqttEndpoint: {
+                localMqttEndpoint: {
                     type: "string"
                 },
                 localIotClientCertSSMParam: {
@@ -168,7 +168,7 @@ topic # out 1
             },
             required: ["nrfCloudMqttEndpoint", "mqttTopicPrefix", "mqttTeamDeviceClientId",
                 "mqttTeamDeviceClientIdSSMParam", "mqttTeamDeviceCertSSMParam", "mqttTeamDeviceKeySSMParam",
-                "mqttEndpoint", "localIotClientCertSSMParam", "localIotClientKeySSMParam"]
+                "localMqttEndpoint", "localIotClientCertSSMParam", "localIotClientKeySSMParam"]
         }, config)
 
         if (!valid) {

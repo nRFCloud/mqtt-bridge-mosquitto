@@ -62,7 +62,7 @@ interface ContextInfo {
     mqttTeamDeviceClientIdSSMParam: string;
     mqttTeamDeviceCertSSMParam: string;
     mqttTeamDeviceKeySSMParam: string;
-    mqttEndpoint: string;
+    localMqttEndpoint: string;
     localIotClientCertSSMParam: string;
     localIotClientKeySSMParam: string;
 }
@@ -85,7 +85,7 @@ async function initializeContext(input: CliInput) {
         mqttTeamDeviceClientIdSSMParam: NRFCLOUD_MQTT_DEVICE_ID_PARAM,
         mqttTeamDeviceCertSSMParam: NRFCLOUD_CLIENT_CERT_PARAM,
         mqttTeamDeviceKeySSMParam: NRFCLOUD_CLIENT_KEY_PARAM,
-        mqttEndpoint: localIotEndpoint,
+        localMqttEndpoint: localIotEndpoint,
         localIotClientCertSSMParam: LOCAL_CLIENT_CERT_PARAM,
         localIotClientKeySSMParam: LOCAL_CLIENT_KEY_PARAM,
     }
